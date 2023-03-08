@@ -96,7 +96,7 @@ router.post("/oneResult", (req, res) => {
   console.log(req.body);
   let event = req.body.event;
 
-  Result.find({ event: event }, (err, result) => {
+  Result.aggregate([{$match:{event:event}},{$sort:{position:1}}], (err, result) => {
     if (err) {
       res.json({ success: false, msg: "some error occur" });
     } else {
@@ -104,7 +104,7 @@ router.post("/oneResult", (req, res) => {
     }
   });
 });
-//overall
+//postresult
 router.post("/postResult", (req, res) => {
   console.log(req.body);
   let data = req.body;
@@ -126,14 +126,16 @@ router.post("/postResult", (req, res) => {
     }
   });
 });
-//getOneResult
+//overall
 router.get("/overall", async (req, res) => {
   let result = await Result.aggregate(
-    [{ $group: { _id: "$college", totalPoints: { $sum: "$mark" } } }],
+    [{ $group: { _id: "$college", totalPoints: { $sum: "$mark" } } },
+  { $sort: { totalPoints: -1 } }],
     (err, data) => {
       if (err) {
         res.json({ success: false, msg: "some error occur" });
       } else {
+        console.log(data)
         res.json({ success: true, data });
       }
     }
